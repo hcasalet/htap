@@ -5,6 +5,7 @@
 
 #include <cstdio>
 #include <string>
+#include <iostream>
 
 #include "rocksdb/db.h"
 #include "rocksdb/options.h"
@@ -33,18 +34,21 @@ int main() {
   // create the DB if it's not already present
   options.create_if_missing = true;
 
+  std::cout << "starting test!" << std::endl;
+
   // open DB
   Status s = DB::Open(options, kDBPath, &db);
   assert(s.ok());
 
   // Put key-value
-  s = db->Put(WriteOptions(), "key1", "value");
+  s = db->Put(WriteOptions(), "key1", "value max");
   assert(s.ok());
   std::string value;
   // get value
   s = db->Get(ReadOptions(), "key1", &value);
   assert(s.ok());
-  assert(value == "value");
+  assert(value == "value max");
+  std::cout << "reading -- key1 = " << value << std::endl;
 
   // atomically apply a set of updates
   {
@@ -58,12 +62,13 @@ int main() {
   assert(s.IsNotFound());
 
   db->Get(ReadOptions(), "key2", &value);
-  assert(value == "value");
+  assert(value == "value max");
+  std::cout << "reading -- key2 = " << value << std::endl;
 
   {
     PinnableSlice pinnable_val;
     db->Get(ReadOptions(), db->DefaultColumnFamily(), "key2", &pinnable_val);
-    assert(pinnable_val == "value");
+    assert(pinnable_val == "value max");
   }
 
   {
@@ -72,9 +77,9 @@ int main() {
     // The intenral buffer could be set during construction.
     PinnableSlice pinnable_val(&string_val);
     db->Get(ReadOptions(), db->DefaultColumnFamily(), "key2", &pinnable_val);
-    assert(pinnable_val == "value");
+    assert(pinnable_val == "value max");
     // If the value is not pinned, the internal buffer must have the value.
-    assert(pinnable_val.IsPinned() || string_val == "value");
+    assert(pinnable_val.IsPinned() || string_val == "value max");
   }
 
   PinnableSlice pinnable_val;
@@ -83,7 +88,7 @@ int main() {
   // Reset PinnableSlice after each use and before each reuse
   pinnable_val.Reset();
   db->Get(ReadOptions(), db->DefaultColumnFamily(), "key2", &pinnable_val);
-  assert(pinnable_val == "value");
+  assert(pinnable_val == "value max");
   pinnable_val.Reset();
   // The Slice pointed by pinnable_val is not valid after this point
 

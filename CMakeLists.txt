@@ -1,19 +1,21 @@
 cmake_minimum_required(VERSION 3.16.3)
 
-SET(CMAKE_CXX_FLAGS "-std=c++17")
-set(EXTERNAL_LIB_HEADERS lib/rocksdb)
-
 project(HTAP)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
-find_package(RocksDB 5.14 REQUIRED)
+SET(CMAKE_CXX_FLAGS "-std=c++17")
 
-# Rocksdb
-option(WITH_SYSTEM_ROCKSDB "require and build with system rocksdb" OFF)
-if (WITH_SYSTEM_ROCKSDB)
-  find_package(RocksDB 5.14 REQUIRED)
-endif()
+add_executable(benchtest src/cabindb/insert.cc)
 
-add_executable(insert src/test/insert.cc)
-target_include_directories(insert PUBLIC /usr/include/rocksdb-7.8.3/include)
-target_link_libraries(insert rocksdb)
+add_subdirectory(lib/rocksdb)
+add_subdirectory(src/cabindb)
+add_subdirectory(src/test/ycsb)
+
+include_directories(${CMAKE_SOURCE_DIR}/lib/rocksdb/include)
+include_directories(/usr/include)
+target_link_libraries(benchtest rocksdb)
+
+#set(ROCKSDB_INCLUDE_DIR /lib/rocksdb/include/rocksdb/)
+#set(ROCKSDB_LIB_DIR /lib/rocksdb)
+
+#target_include_directories(insert PUBLIC "${ROCKSDB_INCLUDE_DIR}")
+#target_link_directories(insert PUBLIC "${ROCKSDB_LIB_DIR}")
