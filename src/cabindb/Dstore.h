@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "cabindb_namespace.h"
+#include "compactor.h"
 #include <rocksdb/options.h>
 
 namespace rocksdb{

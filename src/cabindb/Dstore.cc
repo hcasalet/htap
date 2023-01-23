@@ -12,11 +12,16 @@ namespace CABINDB_NAMESPACE {
         std::string db_name = "cabindb";
         std::string config_path = "../src/cabindb/ceph/ceph.conf";
 
-        options.env = EnvLibrados(db_name, config_path);
+        options.env = new rocksdb::EnvLibrados(db_name, config_path, "cabindb_pool");
         options.IncreaseParallelism();
         options.OptimizeLevelStyleCompaction();
         // create the DB if it's not already present
         options.create_if_missing = true;
+
+        options.compaction_style = rocksdb::kCompactionStyleNone;
+        options.level0_slowdown_writes_trigger = 3000;
+        options.level0_stop_writes_trigger = 5000;
+        options.listeners.emplace_back(new CabinCompactor(options));;
 
         rocksdb::Status s = rocksdb::DB::Open(options,dbfilename,&db_);
         if(!s.ok()){
