@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CABINDB_COMPACTOR_H
+#define CABINDB_COMPACTOR_H
 
 #include "rocksdb/db.h"
 #include "rocksdb/env.h"
@@ -78,6 +79,13 @@ class CabinCompactor : public Compactor {
          input_file_names.push_back(file.name);
          }
       }
+
+      if (!cf_name.compare("default")) {
+         for (auto input_file_name : input_file_names) {
+            db->DeleteFile(input_file_name);
+         }
+         return nullptr;
+      }
       return new CompactionTask(db, this, cf_name, input_file_names,
                               options_.num_levels - 1, compact_options_, false);
     }
@@ -111,3 +119,5 @@ class CabinCompactor : public Compactor {
 };
 
 }
+
+#endif

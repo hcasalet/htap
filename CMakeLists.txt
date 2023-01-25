@@ -4,15 +4,12 @@ project(HTAP)
 
 SET(CMAKE_CXX_FLAGS "-std=c++17")
 
-add_executable(benchtest src/cabindb/insert.cc)
-
 add_subdirectory(lib/rocksdb)
 add_subdirectory(src/cabindb)
 add_subdirectory(src/test/ycsb)
 
 include_directories(${CMAKE_SOURCE_DIR}/lib/rocksdb/include)
 include_directories(/usr/include)
-target_link_libraries(benchtest rocksdb)
 
 #set(ROCKSDB_INCLUDE_DIR /lib/rocksdb/include/rocksdb/)
 #set(ROCKSDB_LIB_DIR /lib/rocksdb)

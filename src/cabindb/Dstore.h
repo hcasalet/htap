@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CABINDB_DSTORE_H
+#define CABINDB_DSTORE_H
 
 #include <string>
 #include <vector>
@@ -58,3 +59,5 @@ class Dstore {
 };
 
 }
+
+#endif
