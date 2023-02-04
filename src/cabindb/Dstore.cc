@@ -7,10 +7,29 @@
 #include "rocksdb-rados-env/env_librados.h"
 
 namespace CABINDB_NAMESPACE {
+    class CephCabinDBLogger : public rocksdb::Logger {
+      public:
+        explicit CephCabinDBLogger() {};
+        ~CephCabinDBLogger() override {};
+
+        void Logv(const char* format, va_list ap) override {
+            Logv(rocksdb::INFO_LEVEL, format, ap);
+        }
+
+        void Logv(const rocksdb::InfoLogLevel log_level, const char* format, va_list ap) override {
+            int v = rocksdb::NUM_INFO_LOG_LEVELS - log_level - 1;
+            //dout(ceph::dout::need_dynamic(v));
+            char buf[65536];
+            vsnprintf(buf, sizeof(buf), format, ap);
+           // *_dout << buf << dendl;
+        }
+
+    };
+
    Dstore::Dstore(const char *dbfilename, rocksdb::Options& options, std::vector<std::string> &cfshards) {
 
         std::string db_name = "cabindb";
-        std::string config_path = "../src/cabindb/ceph/ceph.conf";
+        std::string config_path = "/etc/ceph/ceph.conf";
 
         options.env = new rocksdb::EnvLibrados(db_name, config_path, "cabindb_pool");
         options.IncreaseParallelism();
@@ -23,9 +42,11 @@ namespace CABINDB_NAMESPACE {
         options.level0_stop_writes_trigger = 5000;
         options.listeners.emplace_back(new CabinCompactor(options));;
 
+        options.info_log.reset(new CephCabinDBLogger());
+
         rocksdb::Status s = rocksdb::DB::Open(options,dbfilename,&db_);
         if(!s.ok()){
-            std::cerr<<"Can't open rocksdb "<<dbpath_<<" "<<s.ToString()<<std::endl;
+            std::cerr<<"Can't open rocksdb "<<dbfilename<<" "<<s.ToString()<<std::endl;
             exit(0);
         }
 

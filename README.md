@@ -14,43 +14,45 @@ Ceph requires nodes to have the following, among which on a typical Linux machin
 - LVM2
 - Docker
 #### To install Docker on Ubuntu:
-% apt-get update
-% apt-get install ca-certificates curl gnupg lsb-release
-% mkdir -p /etc/apt/keyrings
-% curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-% echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-% apt-get update
-% chmod a+r /etc/apt/keyrings/docker.gpg
-% apt-get update
-% apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+% sudo apt-get update
+% sudo apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+% curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+% sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+% sudo apt update
+% sudo apt install docker-ce docker-ce-cli containerd.io
 
 #### install cephadm (as root):
-% curl --silent --remote-name --location https://github.com/ceph/ceph/raw/quincy/src/cephadm/cephadm
-% chmod +x cephadm
-% ./cephadm add-repo --release quincy
-% ./cephadm install
+% sudo apt install -y cephadm
 
 #### bootstrap 1st node:
-% cephadm bootstrap --mon-ip *<mon-ip>*
+% cephadm bootstrap --mon-ip *<mon-ip>* --allow-fqdn-hostname
 
 #### enable ceph cli: 
-% cephadm install ceph-common
+% sudo cephadm add-repo --release quincy
+% sudo cephadm install ceph-common
 
 #### add hosts:
-% ssh-copy-id -f -i /etc/ceph/ceph.pub root@*<host-2>*
-% ssh-copy-id -f -i /etc/ceph/ceph.pub root@*<host-3>*
+% sudo ssh-copy-id -f -i /etc/ceph/ceph.pub root@*<host-2>*
+% sudo ssh-copy-id -f -i /etc/ceph/ceph.pub root@*<host-3>*
 
-% ceph orch host add *<host-2>* [*<ip-host-2>*] --labels _admin
+% ceph orch host add *<hostname-2>* [*<ip-host-2>*] --labels _admin
 
 #### create osd
-% cephadm ceph-volume lvm list /dev/sdb
+% sudo ceph orch apply osd --all-available-devices
+% sudo ceph orch device ls
 
-If the above returns nothing or an error, then need to do the following: 
-% /usr/bin/ceph auth get client.bootstrap-osd > /var/lib/ceph/bootstrap-osd/ceph.keyring
-% ceph-volume lvm prepare --bluestore --data /dev/sdb
+## By then the osds are likely already created. Could use the following but possibly will get an 
+## "Already created?" message
+% ceph orch daemon add osd *<host1>*:/dev/<device>   (use the host name, not ip)
 
-Then:
-% ceph orch apply osd --all-available-devices
-% ceph orch daemon add osd *<host1>*:/dev/sdb
+#### Getting CabinDB
+% git clone https://github.com/hcasalet/htap.git
+% cd htap
+% git submodule update --init --recursive
+
+% sudo apt-get install cmake libgflags-dev
+% sudo apt-get install librados-dev libradospp-dev
+% mkdir build
+% cd build
+% cmake -S .. -B .
+

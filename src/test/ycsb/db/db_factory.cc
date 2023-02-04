@@ -12,7 +12,7 @@ namespace ycsbc {
 
 DB* DBFactory::CreateDB(utils::Properties &props) {
   if (props["dbname"] == "cabindb") {
-    std::string dbpath = props.GetProperty("dbpath","/tmp/test-rocksdb");
+    std::string dbpath = props.GetProperty("dbpath","/tmp/test-cabindb");
     return new CabinDB(dbpath.c_str(), props);
   } else return nullptr;
 }
