@@ -48,14 +48,14 @@ class Dstore {
 
     Status Delete(const std::string &table, const std::string &key);
 
-    ~Dstore() {}
+    ~Dstore();
 
   private:
     rocksdb::DB *db_;
-    std::string dbpath_;
     rocksdb::Options options_;
     std::vector<rocksdb::ColumnFamilyHandle*> cfhandles_;
-
+    rocksdb::ColumnFamilyHandle *default_cf = nullptr;
+    bool must_close_default_cf = false;
 };
 
 }

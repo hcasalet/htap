@@ -115,4 +115,18 @@ namespace CABINDB_NAMESPACE {
         return Status::kOK;
     }
 
+    Dstore::~Dstore()
+    {
+        for (auto& p : cfhandles_) {
+            db_->DestroyColumnFamilyHandle(p);
+        }
+        cfhandles_.clear();
+        if (must_close_default_cf) {
+            db_->DestroyColumnFamilyHandle(default_cf);
+        }
+        default_cf = nullptr;
+        delete db_;
+        db_ = nullptr;
+    }
+
 } // namespace CABINDB_NAMESPACE
