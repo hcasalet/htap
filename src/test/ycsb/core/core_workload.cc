@@ -209,3 +209,6 @@ void CoreWorkload::BuildUpdate(std::vector<ycsbc::DB::KVPair> &update) {
   update.push_back(pair);
 }
 
+size_t CoreWorkload::GetRecordLength() {
+  return record_count_;
+}

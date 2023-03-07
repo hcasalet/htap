@@ -29,7 +29,7 @@ atomic<uint64_t> ops_time[ycsbc::Operation::READMODIFYWRITE + 1];
 void UsageMessage(const char *command);
 bool StrStartWith(const char *str, const char *pre);
 string ParseCommandLine(int argc, const char *argv[], utils::Properties &props);
-void Init(utils::Properties &props, std::string dbname, std::string dbpath);
+void Init(utils::Properties &props);
 void PrintInfo(utils::Properties &props);
 
 int DelegateClient(ycsbc::DB *db, ycsbc::CoreWorkload *wl, const int num_ops,
@@ -63,19 +63,9 @@ int DelegateClient(ycsbc::DB *db, ycsbc::CoreWorkload *wl, const int num_ops,
 
 int main( const int argc, const char *argv[]) {
   utils::Properties props;
-  std::string databasepath = "";
-  if (argv[2] == std::string("leveldb")) {
-    databasepath = "/tmp/test-leveldb";
-  } else if (argv[2] == std::string("rocksdb")) {
-    databasepath = "/tmp/test-rocksdb";
-  } else if (argv[2] == std::string("cabindb")) {
-    databasepath = "/tmp/test-cabindb";
-  }
-
-  Init(props, argv[2], databasepath);
-  std::string my_try = props.GetProperty("dbpath","/tmp/test-rocksdb");
+  Init(props);
   string file_name = ParseCommandLine(argc, argv, props);
-
+  
   ycsbc::DB *db = ycsbc::DBFactory::CreateDB(props);
   if (!db) {
     cout << "Unknown database name " << props["dbname"] << endl;
@@ -288,6 +278,14 @@ string ParseCommandLine(int argc, const char *argv[], utils::Properties &props) 
       }
       props.SetProperty("threadcount", argv[argindex]);
       argindex++;
+    } else if (strcmp(argv[argindex], "-columnfamilies") == 0) {
+      argindex++;
+      if (argindex >= argc) {
+        UsageMessage(argv[0]);
+        exit(0);
+      }
+      props.SetProperty("columnfamilycount", argv[argindex]);
+      argindex++;
     } else if (strcmp(argv[argindex], "-db") == 0) {
       argindex++;
       if (argindex >= argc) {
@@ -427,14 +425,13 @@ inline bool StrStartWith(const char *str, const char *pre) {
   return strncmp(str, pre, strlen(pre)) == 0;
 }
 
-void Init(utils::Properties &props, std::string dbname, std::string dbpath){
-  //props.SetProperty("dbname","leveldb");
-  //props.SetProperty("dbpath","/tmp/test-leveldb");
-  props.SetProperty("dbname", dbname);
-  props.SetProperty("dbpath", dbpath);
+void Init(utils::Properties &props){
+  props.SetProperty("dbname", "");
+  props.SetProperty("dbpath", "");
   props.SetProperty("load","false");
   props.SetProperty("run","false");
   props.SetProperty("threadcount","1");
+  props.SetProperty("columnfamilycount","1");
   props.SetProperty("dboption","0");
   props.SetProperty("dbstatistics","false");
   props.SetProperty("dbwaitforbalance","false");

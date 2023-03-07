@@ -10,7 +10,7 @@ namespace ycsbc {
         rocksdb::Options options;
         SetOptions(&options, props);
 
-        int num_cfshards = stoi(props.GetProperty("fieldcount", "0"));
+        int num_cfshards = stoi(props.GetProperty("columnfamilycount", "0"));
         for (int i = 0; i < num_cfshards; i++) {
             cfshards_.push_back("field"+std::to_string(i));
         }

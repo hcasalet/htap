@@ -146,6 +146,7 @@ class CoreWorkload {
   virtual void BuildValues(std::vector<ycsbc::DB::KVPair> &values);
   virtual void BuildUpdate(std::vector<ycsbc::DB::KVPair> &update);
   virtual std::string BuildMaxKey();
+  virtual size_t GetRecordLength();
   
   virtual std::string GetPool() { return pool_name_; }
   virtual std::string NextTable() { return table_name_; }
@@ -219,7 +220,7 @@ inline void CoreWorkload::NextTransactionScanKey(std::string &start_key, std::st
   end_key = start_key;
   int index = log10(record_count_ / max_scan_len_);
   index = (index - 2) > 0 ? index - 2 : 0; //increase the end by 1 bit
-  end_key[index]++; //截止范围在第四个字符++，这个取合适值就行
+  end_key[index]++;
 }
 
 /* inline std::string CoreWorkload::BuildKeyName(uint64_t key_num) {
